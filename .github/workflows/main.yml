@@ -27,7 +27,7 @@ jobs:
       uses: sfdx-actions/setup-sfdx@v1
       with:
         # Authorize a Salesforce org using an SFDX auth URL
-        sfdx-auth-url: force://PlatformCLI::5Aep8616SrrNkkMrFvj8v8XQeuWxHoOIJzDPIoyFw.PcnOi_N5AIL3VjxB.gGuOlVue_G8_k75J82xH52DyHavg@sfdx-course-hub-dev-ed.my.salesforce.com
+        sfdx-auth-url: ${{ secrets.DEVHUB_URL }}
     # Set default devhub
     - name: Setting DevHub
       run: sfdx force:config:set defaultdevhubusername=anthony.wheeler@sfdx.course.com
