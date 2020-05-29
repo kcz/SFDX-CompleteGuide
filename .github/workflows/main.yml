@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
 
     if: (jobs.build.status == 'success')
-      
+    steps:
       # Sets up Salesforce CLI for this action
       - name: Salesforce SFDX CLI Action
         uses: sfdx-actions/setup-sfdx@v1
