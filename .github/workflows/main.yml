@@ -52,10 +52,11 @@ jobs:
   # This job releases a new package version and deploys it to a UAT environment
   release:
     needs: build
-    if: (jobs.build.status == 'success')
-      # The type of runner that the job will run on
-      runs-on: ubuntu-latest
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
 
+    if: (jobs.build.status == 'success')
+      
       # Sets up Salesforce CLI for this action
       - name: Salesforce SFDX CLI Action
         uses: sfdx-actions/setup-sfdx@v1
