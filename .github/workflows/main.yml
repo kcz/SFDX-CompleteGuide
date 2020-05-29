@@ -12,7 +12,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
+  # This job deploys and tests functionality to Salesforce
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -22,6 +22,7 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
     
+    # Sets up Salesforce CLI for this action
     - name: Salesforce SFDX CLI Action
       uses: sfdx-actions/setup-sfdx@v1
       with:
@@ -47,3 +48,48 @@ jobs:
     #Delete scratch org after successful build
     - name: Deleting Scratch Org
       run: sfdx force:org:delete -p
+
+  # This job releases a new package version and deploys it to a UAT environment
+  release:
+    needs: build
+    if: (jobs.build.status == 'success')
+      # The type of runner that the job will run on
+      runs-on: ubuntu-latest
+
+      # Sets up Salesforce CLI for this action
+      - name: Salesforce SFDX CLI Action
+        uses: sfdx-actions/setup-sfdx@v1
+        with:
+          # Authorize a Salesforce org using an SFDX auth URL
+          sfdx-auth-url: ${{ secrets.DEVHUB_URL }}
+
+      # Creates a new package version for firstCoursePackage
+      - name: Creating Package Version
+        run: |
+          PACKAGE_VERSION_JSON="$(eval sfdx force:package:version:list --concise --released --packages FirstCoursePackage --json | jq '.result | sort_by(-.MajorVersion, -.MinorVersion, -.PatchVersion, -.BuildNumber) | .[0] // ""')"
+          echo $PACKAGE_VERSION_JSON
+          IS_RELEASED=$(jq -r '.IsReleased?' <<< $PACKAGE_VERSION_JSON)
+          MAJOR_VERSION=$(jq -r '.MajorVersion?' <<< $PACKAGE_VERSION_JSON)
+          MINOR_VERSION=$(jq -r '.MinorVersion?' <<< $PACKAGE_VERSION_JSON)
+          PATCH_VERSION=$(jq -r '.PatchVersion?' <<< $PACKAGE_VERSION_JSON)
+          BUILD_VERSION="NEXT"
+          if [ -z $MAJOR_VERSION ]; then MAJOR_VERSION=1; fi;
+          if [ -z $MINOR_VERSION ]; then MINOR_VERSION=0; fi;
+          if [ -z $PATCH_VERSION ]; then PATCH_VERSION=0; fi;
+          if [ "$IS_RELEASED" == "true" ]; then MINOR_VERSION=$(($MINOR_VERSION+1)); fi;
+          VERSION_NUMBER="$MAJOR_VERSION.$MINOR_VERSION.$PATCH_VERSION.$BUILD_VERSION"
+          echo $VERSION_NUMBER
+          export PACKAGE_VERSION_ID="$(eval sfdx force:package:version:create --package FirstCoursePackage --versionnumber $VERSION_NUMBER --installationkeybypass --wait 30 --json | jq -r '.result.SubscriberPackageVersionId')"
+      
+      # Create UAT environment to do end user testing in.
+      - name: Creating UAT Environment
+        run: sfdx force:org:create -a UAT -d 30 -s -f config/project-scratch-json.com
+
+      - name: Install Package Version
+        run: sfdx force:package:install --package $PACKAGE_VERSION_ID --wait 10 --publishwait 10 --noprompt
+
+      - name: Generate User Password
+        run: sfdx force:user:password:generate
+
+      - name: Display User
+        run: sfdx force:user:display
