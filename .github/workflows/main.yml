@@ -70,8 +70,8 @@ jobs:
       - name: Set Default DevHub
         run: sfdx force:config:set defaultdevhubusername=anthony.wheeler@sfdx.course.com
 
-      # Creates a new package version for firstCoursePackage
-      - name: Creating Package Version
+      # Generates new Package Version Number based on the last released version of the package
+      - name: Setting Package Version Number
         run: |
           PACKAGE_VERSION_JSON="$(eval sfdx force:package:version:list --concise --released --packages FirstCoursePackage --json | jq '.result | sort_by(-.MajorVersion, -.MinorVersion, -.PatchVersion, -.BuildNumber) | .[0] // ""')"
           echo $PACKAGE_VERSION_JSON
@@ -86,11 +86,14 @@ jobs:
           if [ "$IS_RELEASED" == "true" ]; then MINOR_VERSION=$(($MINOR_VERSION+1)); fi;
           VERSION_NUMBER="$MAJOR_VERSION.$MINOR_VERSION.$PATCH_VERSION.$BUILD_VERSION"
           echo $VERSION_NUMBER
-          export PACKAGE_VERSION_ID="$(eval sfdx force:package:version:create --package FirstCoursePackage --versionnumber $VERSION_NUMBER --installationkeybypass --wait 30 --json | jq -r '.result.SubscriberPackageVersionId')"
+
+      # Creates new Package Version for firstCoursePackage
+      - name: Creating Package Version
+        run: export PACKAGE_VERSION_ID="$(eval sfdx force:package:version:create --package FirstCoursePackage --versionnumber $VERSION_NUMBER --installationkeybypass --wait 30 --json | jq -r '.result.SubscriberPackageVersionId')"
       
       # Create UAT environment to do end user testing in.
       - name: Creating UAT Environment
-        run: sfdx force:org:create -a UAT -d 30 -s -f config/project-scratch-json.com
+        run: sfdx force:org:create -a UAT -d 30 -s -f config/project-scratch-def.json
 
       - name: Install Package Version
         run: sfdx force:package:install --package $PACKAGE_VERSION_ID --wait 10 --publishwait 10 --noprompt
