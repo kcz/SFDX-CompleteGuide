@@ -34,7 +34,7 @@ jobs:
         run: sfdx force:config:set defaultdevhubusername=anthony.wheeler@sfdx.course.com
 
       # Generates new Package Version Number based on the last released version of the package
-      - name: Setting Package Version Number
+      - name: Creating Package Version
         run: |
           PACKAGE_VERSION_JSON="$(eval sfdx force:package:version:list --concise --released --packages FirstCoursePackage --json | jq '.result | sort_by(-.MajorVersion, -.MinorVersion, -.PatchVersion, -.BuildNumber) | .[0] // ""')"
           echo $PACKAGE_VERSION_JSON
@@ -47,30 +47,10 @@ jobs:
           if [ -z $MINOR_VERSION ]; then MINOR_VERSION=0; fi;
           if [ -z $PATCH_VERSION ]; then PATCH_VERSION=0; fi;
           if [ "$IS_RELEASED" == "true" ]; then MINOR_VERSION=$(($MINOR_VERSION+1)); fi;
-          VERSION_NUMBER=""
-          echo '::set-env name=VERSION_NUMBER::${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}.${BUILD_VERSION}'
-
-      # Creates new Package Version for firstCoursePackage
-      - name: Creating Package Version
-        run: |
+          VERSION_NUMBER="$MAJOR_VERSION.$MINOR_VERSION.$PATCH_VERSION.$BUILD_VERSION"
           echo $VERSION_NUMBER
-         # sfdx force:package:version:create --package FirstCoursePackage --versionnumber $VERSION_NUMBER -x --wait 30
-         # PACKAGE_VERSION_ID="$(eval sfdx force:package:version:create --package FirstCoursePackage --versionnumber $VERSION_NUMBER --installationkeybypass --wait 30 --json | jq -r '.result.SubscriberPackageVersionId')"
-         # echo $PACKAGE_VERSION_ID
-
-      # Create UAT environment to do end user testing in.
-      #- name: Creating UAT Environment
-      #  run: sfdx force:org:create -a UAT -d 30 -s -f config/project-scratch-def.json
-
-      #- name: Install Package Version
-      #  run: sfdx force:package:install --package $PACKAGE_VERSION_ID --wait 10 --noprompt
-
-      #- name: Generate User Password
-      #  run: sfdx force:user:password:generate
-
-      #- name: Display User
-      #  run: sfdx force:user:display
-      # RELEASE___________________
+          PACKAGE_VERSION_ID="$(eval sfdx force:package:version:create --package FirstCoursePackage --versionnumber $VERSION_NUMBER --installationkeybypass --wait 30 --json | jq -r '.result.SubscriberPackageVersionId')"
+          echo $PACKAGE_VERSION_ID
 
   # This job deploys and tests functionality to Salesforce
   #build:
