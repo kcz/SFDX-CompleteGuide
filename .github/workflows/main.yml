@@ -47,8 +47,8 @@ jobs:
           if [ -z $MINOR_VERSION ]; then MINOR_VERSION=0; fi;
           if [ -z $PATCH_VERSION ]; then PATCH_VERSION=0; fi;
           if [ "$IS_RELEASED" == "true" ]; then MINOR_VERSION=$(($MINOR_VERSION+1)); fi;
-          VERSION_NUMBER="$MAJOR_VERSION.$MINOR_VERSION.$PATCH_VERSION.$BUILD_VERSION"
-          echo $VERSION_NUMBER
+          VERSION_NUMBER=""
+          echo '::set-env name=VERSION_NUMBER::$MAJOR_VERSION.$MINOR_VERSION.$PATCH_VERSION.$BUILD_VERSION'
 
       # Creates new Package Version for firstCoursePackage
       - name: Creating Package Version
