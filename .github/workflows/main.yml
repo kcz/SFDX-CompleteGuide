@@ -53,10 +53,9 @@ jobs:
       # Creates new Package Version for firstCoursePackage
       - name: Creating Package Version
         run: |
-          echo $VERSION_NUMBER
-          sfdx force:package:version:create --package FirstCoursePackage --versionnumber $VERSION_NUMBER --installationkeybypass --wait 30
-          PACKAGE_VERSION_ID="$(eval sfdx force:package:version:create --package FirstCoursePackage --versionnumber $VERSION_NUMBER --installationkeybypass --wait 30 --json | jq -r '.result.SubscriberPackageVersionId')"
-          echo $PACKAGE_VERSION_ID
+          sfdx force:package:version:create --package FirstCoursePackage --versionnumber $VERSION_NUMBER -x --wait 30
+         # PACKAGE_VERSION_ID="$(eval sfdx force:package:version:create --package FirstCoursePackage --versionnumber $VERSION_NUMBER --installationkeybypass --wait 30 --json | jq -r '.result.SubscriberPackageVersionId')"
+         # echo $PACKAGE_VERSION_ID
 
       # Create UAT environment to do end user testing in.
       #- name: Creating UAT Environment
