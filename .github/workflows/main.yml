@@ -98,7 +98,7 @@ jobs:
 
     #Pushes all configurations to scratch org
     #- name: Pushing source
-      run: sfdx force:source:push -f
+     # run: sfdx force:source:push -f
 
     #Run all Apex tests in our scratch org
     #- name: Running Apex Tests
