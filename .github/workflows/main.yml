@@ -90,18 +90,19 @@ jobs:
       # Creates new Package Version for firstCoursePackage
       - name: Creating Package Version
         run: |
+          sfdx force:package:version:create --package FirstCoursePackage --versionnumber $VERSION_NUMBER --installationkeybypass --wait 30
           PACKAGE_VERSION_ID="$(eval sfdx force:package:version:create --package FirstCoursePackage --versionnumber $VERSION_NUMBER --installationkeybypass --wait 30 --json | jq -r '.result.SubscriberPackageVersionId')"
           echo $PACKAGE_VERSION_ID
 
       # Create UAT environment to do end user testing in.
-      - name: Creating UAT Environment
-        run: sfdx force:org:create -a UAT -d 30 -s -f config/project-scratch-def.json
+      #- name: Creating UAT Environment
+      #  run: sfdx force:org:create -a UAT -d 30 -s -f config/project-scratch-def.json
 
-      - name: Install Package Version
-        run: sfdx force:package:install --package $PACKAGE_VERSION_ID --wait 10 --noprompt
+      #- name: Install Package Version
+      #  run: sfdx force:package:install --package $PACKAGE_VERSION_ID --wait 10 --noprompt
 
-      - name: Generate User Password
-        run: sfdx force:user:password:generate
+      #- name: Generate User Password
+      #  run: sfdx force:user:password:generate
 
-      - name: Display User
-        run: sfdx force:user:display
+      #- name: Display User
+      #  run: sfdx force:user:display
