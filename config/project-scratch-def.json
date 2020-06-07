@@ -1,5 +1,10 @@
 {
   "orgName": "SFDX Training Co.",
   "edition": "Developer",
-  "features": []
+  "features": ["AnalyticsAdminPerms","DevelopmentWave","Communities"],
+  "settings": {
+    "communitiesSettings": {
+      "enableNetworksEnabled": true
+    }
+  }
 }
